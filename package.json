@@ -5,13 +5,12 @@
   "repository": {
     "url": "https://github.com/SROADev/api-template"
   },
-  "type": "module",
   "scripts": {
     "test": "jest --runInBand ./test",
-    "start": "node dist/app.js",
+    "start": "nodemon",
     "tsc": "tsc",
     "postinstall": "npm run tsc",
-    "start:dev": "nodemon",
+    "start:build": "node dist/app.js",
     "start:sls": "sls offline start",
     "deploy-prod": "sls --stage=production deploy"
   },
