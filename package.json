@@ -5,7 +5,6 @@
   "repository": {
     "url": "https://github.com/SROADev/api-template"
   },
-  "type": "module",
   "scripts": {
     "test": "jest --runInBand ./test",
     "start": "node dist/app.js",
