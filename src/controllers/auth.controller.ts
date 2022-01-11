@@ -12,23 +12,85 @@ const createToken = (user: any) => {
   });
 };
 
+const createRefreshToken = async (userId, clientInfo) => {
+  const refreshToken = uuid.v4();
+  const expiresIn = addMinutes( new Date(), parseInt(process.env['REFRESH_TOKEN_EXPIRES_IN']));
+  await RefreshTokenModel.add(refreshToken, expiresIn, userId, clientInfo);
+  return refreshToken;
+}
+
 export const login = async (
   email: string,
   password: string,
   clientInfo: ClientInfo
 ) => {
- // Your solution here
+  try {
+    const existingUser = await UserModel.getByEmail(email);
+    if (!existingUser) {
+      throw createError(403, 'There was a problem. User does not exist');
+    }
 
+    if (!existingUser.enable) {
+      throw createError(403, 'There was a problem. User disabled please reset your password');
+    }
+
+    if (!comparePasswords(password, existingUser.password)) {
+      existingUser.set({loginAttemp: existingUser.loginAttemp + 1}).save();
+      throw createError(403, 'There was a problem. Invalid Credentials');
+    }
+    
+    existingUser.set({loginAttemp: 0}).save();
+    const token = createToken({ id: existingUser._id});
+    const refreshToken = await createRefreshToken(existingUser._id, clientInfo);
+    return { token: token, refreshToken: refreshToken};
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const refreshToken = async (refreshToken: string) => {
- // Your solution here
+  try {
+    const existToken = await RefreshTokenModel.getByToken(refreshToken);
+    if (!existToken || existToken.expiresIn <= new Date()) {
+      throw createError(403, 'There was a problem. Invalid Token or Token Expired');
+    }
+    const existingUser = await UserModel.getById(existToken.userId);
+    return { token: createToken({ id: existingUser._id}) };
+  } catch (error) {
+    throw error;
+  }
+
+};
+
+export const validateToken = async (token: string) => {
+  try {
+    const user = jwt.verify(token, process.env['JWT_SECRET']);
+    const existingUser = await UserModel.getById(user['id']);
+    if (!existingUser) {
+      throw createError(403, 'There was a problem. User does not exist for this token');
+    }
+    return { token: token, userId: existingUser._id };
+  } catch (error) {
+    throw error;
+  }
 
 };
 
 export const register = async (user: User) => {
-  // Your solution here
-  
+  try {
+    const existingUser = await UserModel.getByEmail(user.email);
+    if (existingUser) {
+      return { exists: true };
+    }
+    user.password = hashPassword(user.password);
+    const newUser = await UserModel.add(user);
+    if (!newUser) {
+      throw createError(403, 'There was a problem.');
+    }
+    return { userId: newUser._id };
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const forgotPassword = async (email: string) => {
