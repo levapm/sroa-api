@@ -8,7 +8,9 @@
   "type": "module",
   "scripts": {
     "test": "jest --runInBand ./test",
-    "start": "tsc && node dist/app.js",
+    "start": "node dist/app.js",
+    "tsc": "tsc",
+    "postinstall": "npm run tsc",
     "start:dev": "nodemon",
     "start:sls": "sls offline start",
     "deploy-prod": "sls --stage=production deploy"
