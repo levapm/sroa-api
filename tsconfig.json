@@ -12,7 +12,8 @@
     "typeRoots": ["node_modules/@types"],
     "target": "es6",
     "esModuleInterop": true,
-    "lib": ["esnext"]
+    "lib": ["esnext"],
+    "skipLibCheck": true
   },
   "exclude": ["node_modules"]
 }
