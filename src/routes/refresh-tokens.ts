@@ -1,3 +1,4 @@
+import { validateToken } from '../controllers/auth.controller';
 import { Request, Router, Response, NextFunction } from 'express';
 import { deleteToken, getTokens } from '../controllers/refresh-token.controller';
 
@@ -6,6 +7,15 @@ export default (app: any) => {
 
   // Mount route as "/api/app/authenticated"
   app.use('/api/authenticated', router);
+
+  router.post('/validate-token', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const response = await validateToken(req.body.token);
+      return res.json(response);
+    } catch (error) {
+      next(error);
+    }
+  });
 
   router.get('/refresh-tokens', async (req: Request, res: Response, next: NextFunction) => {
     try {
